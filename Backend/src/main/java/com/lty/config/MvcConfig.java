@@ -19,6 +19,9 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // token刷新拦截器
+        registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).order(0);
+        // 登录拦截器
         registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns(
                         "/user/login",
@@ -27,7 +30,6 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/shop/**",
                         "/shop-type/**",
                         "/voucher/**"
-                );
-        registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate));
+                ).order(1);
     }
 }
