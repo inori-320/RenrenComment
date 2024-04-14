@@ -22,7 +22,7 @@ spring:
           min-idle: 1
           time-between-eviction-runs: 10s
 mybatis-plus:
-  type-aliases-package: com.lty.entity # 别名扫描包
+  type-aliases-package: com.lty.entity, com.lty.dto # 别名扫描包
 logging:
   level:
     com.lty: debug

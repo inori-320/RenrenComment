@@ -12,6 +12,7 @@ import com.lty.utils.UserHolder;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -20,17 +21,16 @@ import org.springframework.web.bind.annotation.*;
  * 前端控制器
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author lty
+ * @since 2024-4-13
  */
 @Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @Resource
+    @Autowired
     private IUserService userService;
-
-    @Resource
+    @Autowired
     private IUserInfoService userInfoService;
 
     /**

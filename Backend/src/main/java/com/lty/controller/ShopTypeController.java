@@ -16,8 +16,8 @@ import java.util.List;
  * 前端控制器
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author lty
+ * @since 2024-4-13
  */
 @RestController
 @RequestMapping("/shop-type")
@@ -27,8 +27,7 @@ public class ShopTypeController {
 
     @GetMapping("list")
     public Result queryTypeList() {
-        List<ShopType> typeList = typeService
-                .query().orderByAsc("sort").list();
+        List<ShopType> typeList = typeService.getList();
         return Result.ok(typeList);
     }
 }

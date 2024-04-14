@@ -17,7 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 拦截器类，防止没有登录的用户访问需要登录才会使用到的页面
+ *
  * @author lty
+ * @since 2024-4-13
  */
 public class LoginInterceptor implements HandlerInterceptor {
     @Override

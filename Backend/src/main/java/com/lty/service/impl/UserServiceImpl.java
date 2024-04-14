@@ -11,7 +11,6 @@ import com.lty.dto.UserDTO;
 import com.lty.entity.User;
 import com.lty.mapper.UserMapper;
 import com.lty.service.IUserService;
-import com.lty.utils.RedisConstants;
 import com.lty.utils.RegexUtils;
 import com.lty.utils.SystemConstants;
 import jakarta.servlet.http.HttpSession;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import static com.lty.utils.RedisConstants.*;
 
 /**
@@ -40,7 +38,6 @@ import static com.lty.utils.RedisConstants.*;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
     @Autowired
     private UserMapper userMapper;
 
