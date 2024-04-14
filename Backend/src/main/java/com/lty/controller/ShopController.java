@@ -8,6 +8,7 @@ import com.lty.entity.Shop;
 import com.lty.service.IShopService;
 import com.lty.utils.SystemConstants;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -21,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
-
-    @Resource
+    @Autowired
     public IShopService shopService;
 
     /**
@@ -56,8 +56,7 @@ public class ShopController {
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
-        shopService.updateById(shop);
-        return Result.ok();
+        return shopService.updateShop(shop);
     }
 
     /**
