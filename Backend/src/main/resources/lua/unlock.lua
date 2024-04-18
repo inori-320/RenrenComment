@@ -1,8 +1,18 @@
--- 获取锁的线程标识  get key
-local id = redis.call('get', KEYS[1])
--- 比较线程标识与锁中的标识是否一致
-if(id == ARGV[1]) then
-    -- 释放锁 del key
-    return redis.call('del', KEYS[1])
+local key = KEYS[1]
+local threadId = ARGV[1]
+local releaseTime = ARGV[2]
+-- 判断锁是否还是被自己持有
+if(redis.call('hexists', key, threadId) == 0) then
+    -- 锁已经不是自己的了，直接返回
+    return nil
 end
-return 0
+-- 是自己的锁，重入次数-1
+local count = redis.call('hincrby', key, threadId, -1)
+if(count > 0) then
+    -- 大于0就说明不能释放锁
+    redis.call('expire', key, releaseTime)
+else
+    -- 最后一个释放锁的，直接删除锁
+    redis.call('del', key);
+end
+return nil
