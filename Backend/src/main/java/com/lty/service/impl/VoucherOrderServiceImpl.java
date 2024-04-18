@@ -1,8 +1,6 @@
 package com.lty.service.impl;
 
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.lty.dto.Result;
-import com.lty.entity.SeckillVoucher;
 import com.lty.entity.VoucherOrder;
 import com.lty.mapper.VoucherOrderMapper;
 import com.lty.service.ISeckillVoucherService;
@@ -22,7 +20,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -93,7 +90,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         try {
             // 获取代理对象（事务）
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
-            return proxy.createVoucherOrder(voucherOrder);
+            proxy.createVoucherOrder(voucherOrder);
         } finally {
             lock.unlock();
         }
