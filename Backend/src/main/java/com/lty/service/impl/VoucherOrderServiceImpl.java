@@ -8,10 +8,10 @@ import com.lty.mapper.VoucherOrderMapper;
 import com.lty.service.ISeckillVoucherService;
 import com.lty.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lty.service.IVoucherService;
 import com.lty.utils.RedisIdWorker;
-import com.lty.utils.SimpleRedisLock;
 import com.lty.utils.UserHolder;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -36,6 +36,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     private RedisIdWorker redisIdWorker;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Override
     public Result seckillVoucher(Long voucherId) {
@@ -53,9 +55,10 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
         Long userId = UserHolder.getUser().getId();
         // 创建锁对象
-        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
+        // SimpleRedisLock lock = new SimpleRedisLock("lock:order:" + userId, stringRedisTemplate);
+        RLock lock = redissonClient.getLock("lock:order:" + userId);
         // 获取锁
-        if(!simpleRedisLock.tryLock(5)){
+        if(!lock.tryLock()){ // tryLock无参时默认值为不重试，自动过期时间30s
             return Result.fail("一个用户只能下单一次！");
         }
         try {
@@ -63,7 +66,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucherOrder(voucherId);
         } finally {
-            simpleRedisLock.unLock();
+            lock.unlock();
         }
     }
 
