@@ -89,12 +89,12 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     // ACK确认
                     stringRedisTemplate.opsForStream().acknowledge("stream.orders", "g1", record.getId());
                 } catch (Exception e){
-                    handlePendList();
+                    handlePendingList();
                 }
             }
         }
 
-        private void handlePendList() {
+        private void handlePendingList() {
             while(true){
                 try{
                     // 获取pending-list中的订单信息
@@ -112,7 +112,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     Map<Object, Object> value = record.getValue();
                     VoucherOrder voucherOrder = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
                     handleVoucherOrder(voucherOrder);
-                    stringRedisTemplate.opsForStream().acknowledge("stream.order", "g1", record.getId());
+                    stringRedisTemplate.opsForStream().acknowledge("stream.orders", "g1", record.getId());
                 } catch (Exception e){
                     log.error("处理pending-list异常", e);
                     try {

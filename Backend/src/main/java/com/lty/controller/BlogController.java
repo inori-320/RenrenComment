@@ -10,6 +10,7 @@ import com.lty.service.IUserService;
 import com.lty.utils.SystemConstants;
 import com.lty.utils.UserHolder;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +26,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/blog")
 public class BlogController {
-
-    @Resource
+    @Autowired
     private IBlogService blogService;
-    @Resource
+    @Autowired
     private IUserService userService;
 
     @PostMapping
@@ -78,5 +78,10 @@ public class BlogController {
             blog.setIcon(user.getIcon());
         });
         return Result.ok(records);
+    }
+
+    @GetMapping("/{id}")
+    public Result queryBlogById(@PathVariable("id") Long id){
+        return blogService.queryBlogById(id);
     }
 }
