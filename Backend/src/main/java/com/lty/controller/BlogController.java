@@ -51,7 +51,7 @@ public class BlogController {
 
     @GetMapping("/likes/{id}")
     public Result topLikes(@PathVariable("id") Long id) {
-        return null;
+        return blogService.topLikes(id);
     }
 
     @GetMapping("/of/me")

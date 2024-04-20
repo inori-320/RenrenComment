@@ -1,8 +1,10 @@
 package com.lty.service.impl;
 
-import cn.hutool.core.util.BooleanUtil;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lty.dto.Result;
+import com.lty.dto.UserDTO;
 import com.lty.entity.Blog;
 import com.lty.entity.User;
 import com.lty.mapper.BlogMapper;
@@ -16,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -41,9 +47,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     }
 
     private void isBlogLiked(Blog blog) {
-        Long userId = UserHolder.getUser().getId();
-        Boolean isMember = stringRedisTemplate.opsForSet().isMember(RedisConstants.BLOG_LIKED_KEY, userId.toString());
-        blog.setIsLike(BooleanUtil.isTrue(isMember));
+        UserDTO userDTO = UserHolder.getUser();
+        if(userDTO == null) return;
+        Double score = stringRedisTemplate.opsForZSet().score(RedisConstants.BLOG_LIKED_KEY + blog.getId(), userDTO.getId().toString());
+        blog.setIsLike(score != null);
     }
 
     @Override
@@ -63,20 +70,22 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
      */
     @Override
     public void likeBlog(Long id) {
-        Long userId = UserHolder.getUser().getId();
-        Boolean isMember = stringRedisTemplate.opsForSet().isMember(RedisConstants.BLOG_LIKED_KEY, userId.toString());
+        UserDTO userDTO = UserHolder.getUser();
+        if(userDTO == null) return;
+        Long userId = userDTO.getId();
+        Double score = stringRedisTemplate.opsForZSet().score(RedisConstants.BLOG_LIKED_KEY + id, userId.toString());
         // 没赞过，可以点赞
-        if(BooleanUtil.isFalse(isMember)){
+        if(score == null){
             // 点赞数+1
             boolean isSuccess = update().setSql("liked = liked + 1").eq("id", id).update();
             if(isSuccess){
-                stringRedisTemplate.opsForSet().add(RedisConstants.BLOG_LIKED_KEY, userId.toString());
+                stringRedisTemplate.opsForZSet().add(RedisConstants.BLOG_LIKED_KEY + id, userId.toString(), System.currentTimeMillis());
             }
         } else {
             // 否则取消点赞，点赞数-1
             boolean isSuccess = update().setSql("liked = liked - 1").eq("id", id).update();
             if(isSuccess){
-                stringRedisTemplate.opsForSet().remove(RedisConstants.BLOG_LIKED_KEY, userId.toString());
+                stringRedisTemplate.opsForZSet().remove(RedisConstants.BLOG_LIKED_KEY + id, userId.toString());
             }
         }
     }
@@ -95,5 +104,20 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             this.isBlogLiked(blog);
         });
         return Result.ok(records);
+    }
+
+    @Override
+    public Result topLikes(Long id) {
+        Set<String> top5 = stringRedisTemplate.opsForZSet().range(RedisConstants.BLOG_LIKED_KEY + id, 0, 4);
+        if(top5 == null || top5.isEmpty()){
+            return Result.ok(Collections.emptyList());
+        }
+        List<Long> ids = top5.stream().map(Long::valueOf).toList();
+        String idStr = StrUtil.join(",", ids);
+        List<UserDTO> users = userService.query().in("id", ids).last("ORDER BY FIELD(id, " + idStr + ")").list()
+                .stream()
+                .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
+                .collect(Collectors.toList());;
+        return Result.ok(users);
     }
 }
