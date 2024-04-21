@@ -1,6 +1,7 @@
 package com.lty.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.lty.dto.LoginFormDTO;
 import com.lty.dto.Result;
 import com.lty.dto.UserDTO;
@@ -12,6 +13,7 @@ import com.lty.utils.UserHolder;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,13 +67,13 @@ public class UserController {
      * @return 用户信息
      */
     @GetMapping("/me")
-    public Result me(){
+    public Result me() {
         UserDTO user = UserHolder.getUser();
         return Result.ok(user);
     }
 
     @GetMapping("/info/{id}")
-    public Result info(@PathVariable("id") Long userId){
+    public Result info(@PathVariable("id") Long userId) {
         // 查询详情
         UserInfo info = userInfoService.getById(userId);
         if (info == null) {
@@ -82,5 +84,13 @@ public class UserController {
         info.setUpdateTime(null);
         // 返回
         return Result.ok(info);
+    }
+
+    @GetMapping("/{id}")
+    public Result queryUserById(@PathVariable("id") Long userId) {
+        User user = userService.getById(userId);
+        if(user == null) return Result.ok();
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        return Result.ok(userDTO);
     }
 }
