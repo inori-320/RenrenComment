@@ -40,4 +40,19 @@ class DianPingApplicationTests {
             stringRedisTemplate.opsForGeo().add(key, locations);
         }
     }
+
+    @Test
+    void testHyperLogLog(){
+        String[] user = new String[1000];
+        int index = 0;
+        for (int i = 1; i < 1000000; i++){
+            user[index++] = "user_" + i;
+            if(i % 1000 == 0){
+                index = 0;
+                stringRedisTemplate.opsForHyperLogLog().add("hll1", user);
+            }
+            Long size = stringRedisTemplate.opsForHyperLogLog().size("hll1");
+            System.out.println(size);
+        }
+    }
 }
